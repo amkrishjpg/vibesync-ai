@@ -1,8 +1,11 @@
+import Navbar from "./components/layout/Navbar";
+import Home from "./pages/Home";
+
 function App() {
   return (
     <div>
-      <h1>VibeSync AI 🎧</h1>
-      <p>Your music. Your mood.</p>
+      <Navbar />
+      <Home />
     </div>
   );
 }
