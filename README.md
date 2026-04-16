@@ -27,30 +27,38 @@ VibeSync AI is a unique music recommendation web application that suggests songs
 ### Database
 - MongoDB
 
-## Project Structure
-```bash
+## 📁 Project Structure
+
+```
 vibesync-ai/
-├── client/
-├── server/
-├── ml-service/
-├── docs/
+│
+├── client/        # React frontend
+├── server/        # Node/Express backend
+├── ml-service/    # Python ML service
+├── docs/          # Documentation, notes, assets
 └── README.md
-
-Project Status
-
-Initial setup in progress.
-
-Author
-
-Ami Krishna
-
+```
 
 ---
 
-### 7. Make your first commit
-In terminal:
+## 🚧 Project Status
+
+Initial setup in progress.
+
+---
+
+## 👤 Author
+
+Ami Krishna
+
+---
+
+## 🔧 First Commit
+
+Run the following commands in your terminal:
 
 ```bash
 git add .
 git commit -m "Initial project setup with README"
 git push origin main
+```
