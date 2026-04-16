@@ -41,14 +41,26 @@ def recommend(mood):
     mood_vector = np.array(mood_to_vector(mood)).reshape(1, -1)
 
     similarities = cosine_similarity(mood_vector, scaled_features)[0]
-    top_indices = similarities.argsort()[-5:][::-1]
+    top_indices = similarities.argsort()[-10:][::-1]  # slightly more for uniqueness
 
     results = []
+    seen = set()
+
     for idx in top_indices:
-        results.append({
-            "title": df.iloc[idx]["Track"],
-            "artist": df.iloc[idx]["Artist"]
-        })
+        track = df.iloc[idx]["Track"]
+        artist = df.iloc[idx]["Artist"]
+
+        key = track.lower().strip()
+
+        if key not in seen:
+            seen.add(key)
+            results.append({
+                "title": track,
+                "artist": artist
+            })
+
+        if len(results) == 5:
+            break
 
     return results
 
