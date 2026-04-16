@@ -1,7 +1,12 @@
 function Navbar() {
   return (
-    <nav style={{ padding: "15px", background: "#111", color: "#fff" }}>
-      <h2>VibeSync AI 🎧</h2>
+    <nav className="bg-black text-white px-6 py-4 flex justify-between items-center shadow-md">
+      <h1 className="text-xl font-bold">VibeSync AI 🎧</h1>
+      <div className="space-x-6">
+        <span className="cursor-pointer hover:text-gray-400">Home</span>
+        <span className="cursor-pointer hover:text-gray-400">Explore</span>
+        <span className="cursor-pointer hover:text-gray-400">Dashboard</span>
+      </div>
     </nav>
   );
 }
