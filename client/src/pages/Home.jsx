@@ -5,23 +5,29 @@ function Home() {
   const [songs, setSongs] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = () => {
-    if (!mood.trim()) return;
+  const handleSubmit = async () => {
+  if (!mood.trim()) return;
 
-    setLoading(true);
-    setSongs([]); // clear old results
+  setLoading(true);
+  setSongs([]);
 
-    setTimeout(() => {
-      const dummySongs = [
-        { title: "Blinding Lights", artist: "The Weeknd" },
-        { title: "Night Changes", artist: "One Direction" },
-        { title: "Perfect", artist: "Ed Sheeran" },
-      ];
+  try {
+    const res = await fetch("http://localhost:5000/recommend", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ mood }),
+    });
 
-      setSongs(dummySongs);
-      setLoading(false);
-    }, 1000);
-  };
+    const data = await res.json();
+    setSongs(data);
+  } catch (error) {
+    console.error(error);
+  }
+
+  setLoading(false);
+};
 
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-center px-4">
