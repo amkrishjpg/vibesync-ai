@@ -1,28 +1,39 @@
 const express = require("express");
 const cors = require("cors");
+const { spawn } = require("child_process");
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-app.get("/", (req, res) => {
-  res.send("Backend is running 🚀");
-});
-
 app.post("/recommend", (req, res) => {
   const { mood } = req.body;
 
-  console.log("Received mood:", mood);
+  console.log("Mood received:", mood);
 
-  // dummy response (will replace with ML later)
-  const songs = [
-    { title: "Blinding Lights", artist: "The Weeknd" },
-    { title: "Sienna", artist: "The Marias" },
-    { title: "Perfect", artist: "Ed Sheeran" },
-  ];
+  // Call Python ML script
+  const python = spawn("python", ["../ml-service/app.py", mood]);
 
-  res.json(songs);
+  let data = "";
+
+  python.stdout.on("data", (chunk) => {
+  console.log("PYTHON OUTPUT:", chunk.toString());
+  data += chunk.toString();
+});
+
+python.stderr.on("data", (err) => {
+  console.error("PYTHON ERROR:", err.toString());
+});
+
+  python.on("close", () => {
+    try {
+      const result = JSON.parse(data);
+      res.json(result);
+    } catch (error) {
+      res.status(500).send("Error processing ML output");
+    }
+  });
 });
 
 app.listen(5000, () => {
