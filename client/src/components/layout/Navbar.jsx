@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
+<Link to="/explore">Explore</Link>
 function Navbar() {
   return (
     <motion.nav
