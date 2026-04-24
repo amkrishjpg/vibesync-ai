@@ -17,8 +17,6 @@ function Navbar() {
 
         <div className="hidden items-center gap-6 text-sm text-slate-300 sm:flex">
           <span className="cursor-pointer transition hover:text-white">Home</span>
-          <span className="cursor-pointer transition hover:text-white">Explore</span>
-          <span className="cursor-pointer transition hover:text-white">Dashboard</span>
         </div>
       </div>
     </motion.nav>

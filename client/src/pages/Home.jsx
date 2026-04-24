@@ -63,13 +63,6 @@ function Home() {
   Connect Spotify 🎵
 </button>
 
-  <button
-    onClick={() => navigate("/explore")}
-    className="cursor-pointer rounded-xl border border-white/10 bg-white/10 px-5 py-2 backdrop-blur-lg transition hover:bg-white/20"
-  >
-    Explore ✨
-  </button>
-
 </div>
 
       
