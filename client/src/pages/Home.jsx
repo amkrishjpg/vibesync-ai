@@ -56,13 +56,7 @@ function Home() {
       </div>
       <div className="absolute top-6 right-6 z-50 flex gap-3">
   
-  <button
-  onClick={() => window.location.href = "http://localhost:5000/login"}
-  className="cursor-pointer rounded-xl border border-green-400/30 bg-green-500/20 px-5 py-2"
->
-  Connect Spotify 🎵
-</button>
-
+  
 </div>
 
       
