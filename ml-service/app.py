@@ -2,6 +2,8 @@ import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.cluster import KMeans
+import os
+os.environ["LOKY_MAX_CPU_COUNT"] = "4"
 import numpy as np
 import json
 import sys

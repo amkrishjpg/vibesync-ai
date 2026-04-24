@@ -2,21 +2,25 @@ const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
 const { spawn } = require("child_process");
-const usedCodes = new Set();
+
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
+// 🔐 Replace with YOUR values (regenerate if exposed)
 const CLIENT_ID = "ffb5a5305f114cab9a0799608d8506d6";
-const CLIENT_SECRET = "6d1ba62740a847e3b641e83503a538f0";
+const CLIENT_SECRET = "ea4c3c992fcd490b94befb70772bdf15";
 const REDIRECT_URI = "http://127.0.0.1:5173/callback";
+
+// Prevent duplicate code usage
+const usedCodes = new Set();
 
 // =====================
 // STEP 1: Redirect to Spotify
 // =====================
 app.get("/login", (req, res) => {
-  const scope = "user-top-read";
+  const scope = "user-top-read user-read-recently-played";
 
   const authUrl =
     "https://accounts.spotify.com/authorize?" +
@@ -31,14 +35,17 @@ app.get("/login", (req, res) => {
 });
 
 // =====================
-// STEP 2: Callback → get token
+// STEP 2: Callback → get Spotify data
 // =====================
 app.get("/callback", async (req, res) => {
   const code = req.query.code;
 
   console.log("CODE RECEIVED:", code);
 
-  // 🚫 prevent duplicate usage
+  if (!code) {
+    return res.status(400).json({ error: "No code provided" });
+  }
+
   if (usedCodes.has(code)) {
     console.log("Duplicate code ignored");
     return res.json({ message: "Already processed" });
@@ -47,7 +54,8 @@ app.get("/callback", async (req, res) => {
   usedCodes.add(code);
 
   try {
-    const response = await axios.post(
+    // 🔐 Exchange code for access token
+    const tokenRes = await axios.post(
       "https://accounts.spotify.com/api/token",
       new URLSearchParams({
         grant_type: "authorization_code",
@@ -64,10 +72,11 @@ app.get("/callback", async (req, res) => {
       }
     );
 
-    const access_token = response.data.access_token;
+    const access_token = tokenRes.data.access_token;
 
-    const topTracks = await axios.get(
-      "https://api.spotify.com/v1/me/top/tracks",
+    // 🎵 Fetch top tracks
+    const topTracksRes = await axios.get(
+      "https://api.spotify.com/v1/me/top/tracks?limit=10",
       {
         headers: {
           Authorization: `Bearer ${access_token}`,
@@ -75,12 +84,51 @@ app.get("/callback", async (req, res) => {
       }
     );
 
-    const songs = topTracks.data.items.map((track) => ({
-      title: track.name,
-      artist: track.artists[0].name,
-    }));
+    // 🎤 Fetch top artists
+    const topArtistsRes = await axios.get(
+      "https://api.spotify.com/v1/me/top/artists?limit=10",
+      {
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+        },
+      }
+    );
 
-    res.json({ songs });
+    // 🕒 Fetch recently played
+    const recentlyPlayedRes = await axios.get(
+      "https://api.spotify.com/v1/me/player/recently-played?limit=10",
+      {
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+        },
+      }
+    );
+
+    // 🔥 Build Spotify data object
+    const spotifyData = {
+      topTracks: topTracksRes.data.items.map((track) => ({
+        title: track.name,
+        artist: track.artists[0]?.name || "Unknown",
+        image: track.album?.images?.[0]?.url || "",
+      })),
+
+      topArtists: topArtistsRes.data.items.map((artist) => ({
+        name: artist.name,
+        image: artist.images?.[0]?.url || "",
+      })),
+
+      recentlyPlayed: recentlyPlayedRes.data.items.map((item) => ({
+        title: item.track?.name || "Unknown",
+        artist: item.track?.artists?.[0]?.name || "Unknown",
+        image: item.track?.album?.images?.[0]?.url || "",
+      })),
+    };
+
+    // ✅ Debug log (IMPORTANT)
+    console.log("SPOTIFY DATA:", spotifyData);
+
+    // ✅ Send to frontend
+    res.json(spotifyData);
   } catch (err) {
     console.error("SPOTIFY ERROR:", err.response?.data || err.message);
     res.status(500).json({ error: "Spotify API failed" });
@@ -88,7 +136,7 @@ app.get("/callback", async (req, res) => {
 });
 
 // =====================
-// ML ROUTE (same)
+// STEP 3: ML RECOMMENDATION
 // =====================
 app.post("/recommend", (req, res) => {
   const { mood, intensity, spotifyData } = req.body;
@@ -98,8 +146,13 @@ app.post("/recommend", (req, res) => {
   let data = "";
 
   python.stdin.write(
-    JSON.stringify({ mood, intensity, spotifyData })
+    JSON.stringify({
+      mood,
+      intensity,
+      spotifyData,
+    })
   );
+
   python.stdin.end();
 
   python.stdout.on("data", (chunk) => {
@@ -119,6 +172,9 @@ app.post("/recommend", (req, res) => {
   });
 });
 
+// =====================
+// START SERVER
+// =====================
 app.listen(5000, () => {
   console.log("Server running on port 5000");
 });
